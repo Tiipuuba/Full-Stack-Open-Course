@@ -15,25 +15,37 @@ const Statistics = ({good, neutral, bad}) => {
     return <p>No feedback given</p>
   }
   return (
-    <div>
-        <StatisticsLine text="good" value={good}/>
-        <StatisticsLine text="neutral" value={neutral}/>
-        <StatisticsLine text="bad" value={bad}/>
-        <StatisticsLine text="average" value={(good - bad)/(good + bad + neutral)}/>
-        <StatisticsLine text="positive" value={(good)/(good + bad + neutral)}/>
-    </div>
+    <table>
+      <tbody>
+          <StatisticsLine text="good" value={good}/>
+          <StatisticsLine text="neutral" value={neutral}/>
+          <StatisticsLine text="bad" value={bad}/>
+          <StatisticsLine text="average" value={(good - bad)/(good + bad + neutral)}/>
+          <StatisticsLine text="positive" value={(good)/(good + bad + neutral)}/>
+      </tbody>
+    </table>
   )
 }
 
 const StatisticsLine = ({text, value}) => {
+  let posvalue = value
+
   if (text === "positive") {
     if (value === 1) {
-      return <p>{text} 100%</p>
+        posvalue = "100%"
+    } else if (value <= 0) {
+      posvalue = "0%"
+    } else {
+        posvalue = value * 100 + "%"
     }
-    return <p>{text} {value}%</p>
   }
-
-  return <p>{text} {value}</p>
+  
+  return (
+    <tr>
+      <td>{text}</td>
+      <td>{posvalue}</td>
+    </tr>
+  )
 }
 
 const App = () => {
