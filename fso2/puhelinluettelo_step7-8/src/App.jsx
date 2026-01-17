@@ -85,8 +85,6 @@ const App = () => {
         setNewNumber('')
       })
 
-/*     setPersons(persons.concat(nameObject)) */
-
   }
 
   return (
