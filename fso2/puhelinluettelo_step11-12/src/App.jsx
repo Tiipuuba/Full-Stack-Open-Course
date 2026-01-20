@@ -26,7 +26,7 @@ const Persons = ({ persons, filter, onClick }) => {
   return (
     <div>
       {matchNames.map(person => 
-      <p key={person.name}>{person.name} <button  onClick={() => onClick(person.id)}>delete</button></p>
+      <p key={person.name}>{person.name} <button  onClick={() => onClick(person.id, person.name)}>delete</button></p>
       )}
     </div>
   )
@@ -39,16 +39,19 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
   const [notificationMessage, setNotificationMessage] = useState('')
+  const [notificationType, setNotificationType] = useState('')
 
   useEffect(() => {
     getContacts()
   }, [])
 
   const doNotification = (props) => {
+
     setNotificationMessage(props)
-      setTimeout(() => {
-        setNotificationMessage('')
-      }, 5000)    
+    setTimeout(() => {
+      setNotificationMessage('')
+      setNotificationType('')
+    }, 5000)    
   }
 
   const getContacts = () => {
@@ -76,7 +79,7 @@ const App = () => {
     event.preventDefault()
 
     const findPerson = persons.find(person => person.name === newName)
-    console.log(findPerson);
+
     if ( findPerson !== undefined) {
       const confirmChange = confirm(`${findPerson.name} is already added to phonebook, replace the old number with a new one?`)
 
@@ -92,6 +95,7 @@ const App = () => {
             setNewName('')
             setNewNumber('')
           })
+        setNotificationType('success')
         doNotification(`Replaced ${findPerson.name}'s number`)
         getContacts()
         return
@@ -103,6 +107,7 @@ const App = () => {
       name: newName,
       number: newNumber
     }
+    setNotificationType('success')
     doNotification(`Added ${newName}`)
     contactService
       .create(nameObject)
@@ -114,17 +119,22 @@ const App = () => {
     getContacts()
   }
 
-  const removeContact = (id) => {
-
-    const findPerson = persons.find(person => person.id === id)
+  const removeContact = (id, name) => {
     
-    const confirmRemoval = confirm(`Delete ${findPerson.name}?`)
+    const confirmRemoval = confirm(`Delete ${name}?`)
     if (confirmRemoval === true) {
       contactService
         .remove(id)
-        .then(getContacts())
+        .then(response => {
+          setNotificationType('success')
+          doNotification(`Removed ${name}`)
+          getContacts()
+        })
+        .catch(error => {
+          setNotificationType('error')
+          doNotification(`Information of ${name} has already been removed from server`)
+        })
     }
-    doNotification(`Removed ${findPerson.name}`)
 
   }
   return (
@@ -132,7 +142,7 @@ const App = () => {
       <h2>Phonebook</h2>
       <Filter value={filter} onChange={filterNames} />
       <h2>add a new</h2>
-      <Notification message={notificationMessage} />
+      <Notification message={notificationMessage} type={notificationType}/>
       <PersonForm 
         onSubmit={addPerson}
         nameValue={newName}
