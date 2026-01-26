@@ -3,7 +3,21 @@ var morgan = require('morgan')
 
 const app = express()
 
-app.use(morgan('tiny'))
+morgan(function (tokens, req, res) {
+  return [
+    tokens.method(req, res),
+    tokens.url(req, res),
+    tokens.status(req, res),
+    tokens.res(req, res, 'content-length'), '-',
+    tokens['response-time'](req, res), 'ms'
+  ].join(' ')  
+})
+
+morgan.token('data', function getData(req) {
+  return JSON.stringify(req.body)
+})
+
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :data'))
 app.use(express.json())
 
 
@@ -29,7 +43,6 @@ let persons = [
     name: "Mary Poppendieck",
     number: "0502671224"
   },
-
 ]
 
 app.get('/info', (request, response) => {
@@ -85,7 +98,7 @@ app.delete('/api/persons/:id', (request, response) => {
   const id = request.params.id
   persons = persons.filter((person => person.id !== id))
 
-  response.status(204).end()
+  return response.status(204).end()
 })
 
 const PORT = 3001
