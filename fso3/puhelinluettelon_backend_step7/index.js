@@ -1,6 +1,9 @@
 const express = require('express')
+var morgan = require('morgan')
+
 const app = express()
 
+app.use(morgan('combined'))
 app.use(express.json())
 
 let persons = [
@@ -28,31 +31,51 @@ let persons = [
 ]
 
 app.get('/info', (request, response) => {
-  response.send(`<p>Phonebook has info for ${persons.length} people</p><p>${Date()}</p>`)
+  return response.send(`<p>Phonebook has info for ${persons.length} people</p><p>${Date()}</p>`)
 })
 
 app.get('/api/persons', (request, response) => {
-  response.json(persons)
+  return response.json(persons)
 })
 
-app.get('/api/persons/:id', (request, response) => {
+app.get('/api/persons/:id', function (request, response) {
   const id = request.params.id
   const person = persons.find(person => person.id === id)
   if (person) {
-    response.json(person)
+    return response.json(person)
   } else {
-    response.status(404).end()
+    return response.status(404).end()
   }
 })
 
 app.post('/api/persons', (request, response) => {
+
   const person = request.body
+  
+  if (person.name === undefined || person.number === undefined) {
+    return response.status(400).json({ error: 'missing name or number' })
+  }
+
+ let exists = false
+ 
+  {persons.map(p =>
+    p.name === person.name
+    ? exists = true
+    : null
+  )}
+  
+  if (exists === true) {
+  return response.status(400).json({
+      error: 'name must be unique'
+    })
+  }
+
   const id = Math.floor(Math.random() * 10000)
   person.id = String(id)
 
   persons = persons.concat(person)
   
-  response.json(person)
+  return response.json(person)
   
 })
 

@@ -39,19 +39,9 @@ app.get('/api/persons/:id', (request, response) => {
   const id = request.params.id
   const person = persons.find(person => person.id === id)
   if (person) {
-    response.json(person)
+    return response.json(person)
   } else {
-    response.status(404).end()
-  }
-})
-
-app.get('/api/persons/:id', (request, response) => {
-  const id = request.params.id
-  const person = persons.find(person => person.id === id)
-  if (person) {
-    response.json(person)
-  } else {
-    response.status(404).end()
+    return response.status(404).end()
   }
 })
 
@@ -60,22 +50,29 @@ app.post('/api/persons', (request, response) => {
   const person = request.body
   
   if (person.name === undefined || person.number === undefined) {
-    response.status(400).json({ error: 'missing name or number' })
+    return response.status(400).json({ error: 'missing name or number' })
   }
 
+ let exists = false
+ 
   {persons.map(p =>
     p.name === person.name
-    ? response.status(400).json({ error: 'name must be unique' })
+    ? exists = true
     : null
   )}
   
+  if (exists === true) {
+  return response.status(400).json({
+      error: 'name must be unique'
+    })
+  }
 
   const id = Math.floor(Math.random() * 10000)
   person.id = String(id)
 
   persons = persons.concat(person)
   
-  response.json(person)
+  return response.json(person)
   
 })
 
