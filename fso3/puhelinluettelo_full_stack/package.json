@@ -1,0 +1,17 @@
+{
+  "name": "puhelinluettelo_full_stack",
+  "version": "1.0.0",
+  "description": "",
+  "license": "MIT",
+  "author": "Robert Brusila",
+  "type": "commonjs",
+  "main": "dist/index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "morgan": "^1.10.1"
+  }
+}
