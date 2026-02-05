@@ -77,8 +77,6 @@ const App = () => {
   const addPerson = ( event ) => {
 
     event.preventDefault()
-    console.log(newName, newNumber);
-    
 
     if (newName === '' || newNumber === '') {
       setNotificationType('error')
@@ -136,10 +134,6 @@ const App = () => {
           setNotificationType('success')
           doNotification(`Removed ${name}`)
           getContacts()
-        })
-        .catch(error => {
-          setNotificationType('error')
-          doNotification(`Information of ${name} has already been removed from server`)
         })
     }
 
