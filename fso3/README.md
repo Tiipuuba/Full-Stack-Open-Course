@@ -1,1 +1,1 @@
-https://full-stack-open-course-6o8z.onrender.com/api/persons
+https://full-stack-open-course-6o8z.onrender.com
