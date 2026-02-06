@@ -5,7 +5,7 @@
   "license": "MIT",
   "author": "Robert Brusila",
   "type": "commonjs",
-  "main": "dist/index.html",
+  "main": "eslint.config.js",
   "scripts": {
     "start": "node index.js",
     "dev": "node --watch index.js",
