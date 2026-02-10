@@ -1,5 +1,7 @@
+require('dotenv').config()
 const express = require('express')
 var morgan = require('morgan')
+const Contact = require('./models/contact')
 
 const app = express()
 app.use(express.static('dist'))
@@ -21,37 +23,14 @@ morgan.token('data', function getData(req) {
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :data'))
 app.use(express.json())
 
-
-
-let persons = [
-    {
-        id: "1",
-        name: "Arto Hellas",
-        number: "040-123456"
-    },
-    {
-        id: "2",
-        name: "Ada Lovelace",
-        number: "39-44-5323523"
-    },
-    {
-        id: "3",
-        name: "Dan Abravmov",
-        number: "12-43-234234"
-    },
-    {
-        id: "4",
-        name: "Mary Poppendieck",
-        number: "0502671224"
-    },
-]
-
 app.get('/info', (request, response) => {
     return response.send(`<p>Phonebook has info for ${persons.length} people</p><p>${Date()}</p>`)
 })
 
 app.get('/api/persons', (request, response) => {
-    return response.json(persons)
+    Contact.find({}).then(notes => {
+        response.json(notes)
+    })
 })
 
 app.get('/api/persons/:id', function (request, response) {
@@ -101,7 +80,7 @@ app.delete('/api/persons/:id', (request, response) => {
     return response.status(204).end()
 })
 
-const PORT = 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
