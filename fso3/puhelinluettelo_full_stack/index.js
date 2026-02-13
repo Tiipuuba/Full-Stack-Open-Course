@@ -4,7 +4,6 @@ var morgan = require('morgan')
 const Contact = require('./models/contact')
 
 const app = express()
-app.use(express.static('dist'))
 
 morgan(function (tokens, req, res) {
     return [
@@ -20,65 +19,92 @@ morgan.token('data', function getData(req) {
     return JSON.stringify(req.body)
 })
 
-app.use(morgan(':method :url :status :res[content-length] - :response-time ms :data'))
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  }
+
+  next(error)
+}
+
+app.use(express.static('dist'))
 app.use(express.json())
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :data'))
 
 app.get('/info', (request, response) => {
-    return response.send(`<p>Phonebook has info for ${persons.length} people</p><p>${Date()}</p>`)
+    Contact.find({}).then(contacts => {
+        return response.send(`<p>Phonebook has info for ${contacts.length} people</p><p>${Date()}</p>`)
+    })
+    
 })
 
-app.get('/api/persons', (request, response) => {
-    Contact.find({}).then(notes => {
-        response.json(notes)
+app.get('/api/contacts', (request, response) => {
+    Contact.find({}).then(contacts => {
+        response.json(contacts)
     })
 })
 
-app.get('/api/persons/:id', function (request, response) {
-    const id = request.params.id
-    const person = persons.find(person => person.id === id)
-    if (person) {
-        return response.json(person)
-    } else {
-        return response.status(404).end()
-    }
+app.get('/api/contacts/:id', (request, response, next) => {
+    Contact.findById(request.params.id)
+        .then(person => {
+            if (person) {
+                response.json(person)
+            } else {
+                response.status(404).end()
+            }
+        })
+        .catch(error => next(error))
 })
 
-app.post('/api/persons', (request, response) => {
-    const person = request.body
-
-    if (person.name === undefined || person.number === undefined) {
+app.post('/api/contacts', (request, response) => {
+    if (request.body.name === undefined || request.body.number === undefined) {
         return response.status(400).json({ error: 'missing name or number' })
     }
+    const contact = new Contact({
+        name: request.body.name,
+        number: request.body.number
+    })
 
-    let exists = false
+    contact.save().then(result => {
+        response.json(result)
+    })
+})
 
-    {persons.map(p =>
-        p.name === person.name
-        ? exists = true
-        : null
-    )}
-  
-    if (exists === true) {
-        return response.status(400).json({
-            error: 'name must be unique'
+app.put('/api/contacts/:id', (request, response, next) => {
+    const { name, number } = request.body
+
+    Contact.findById(request.params.id)
+        .then(contact => {
+            if (!contact) {
+                return response.status(404).end()
+            }
+
+            contact.name = name
+            contact.number = number
+
+            return contact.save().then((updatedContact) => {
+                response.json(updatedContact)
+            })
         })
-        }
-
-    const id = Math.floor(Math.random() * 10000)
-    person.id = String(id)
-
-    persons = persons.concat(person)
-
-    return response.json(person)
-  
+        .catch(error => next(error))
 })
 
-app.delete('/api/persons/:id', (request, response) => {
-    const id = request.params.id
-    persons = persons.filter((person => person.id !== id))
-
-    return response.status(204).end()
+app.delete('/api/contacts/:id', (request, response, next) => {
+    Contact.findByIdAndDelete(request.params.id)
+        .then (result => {
+            response.status(204).end()
+        })
+        .catch(error => next(error))
 })
+
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: 'unknown endpoint' })
+}
+
+app.use(unknownEndpoint)
+app.use(errorHandler)
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {
