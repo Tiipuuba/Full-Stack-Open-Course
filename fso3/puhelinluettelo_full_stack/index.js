@@ -22,9 +22,11 @@ morgan.token('data', function getData(req) {
 const errorHandler = (error, request, response, next) => {
   console.error(error.message)
 
-  if (error.name === 'CastError') {
-    return response.status(400).send({ error: 'malformatted id' })
-  }
+    if (error.name === 'CastError') {
+        return response.status(400).send({ error: 'malformatted id' })
+    } else if (error.name === 'ValidationError') {
+        return response.status(400).json({ error: error.message })
+    }
 
   next(error)
 }
@@ -58,18 +60,23 @@ app.get('/api/contacts/:id', (request, response, next) => {
         .catch(error => next(error))
 })
 
-app.post('/api/contacts', (request, response) => {
-    if (request.body.name === undefined || request.body.number === undefined) {
+app.post('/api/contacts', (request, response, next) => {
+    const body = request.body
+    if (!body.name || !body.number) {    
         return response.status(400).json({ error: 'missing name or number' })
     }
+
     const contact = new Contact({
-        name: request.body.name,
-        number: request.body.number
+        name: body.name,
+        number: body.number
     })
 
-    contact.save().then(result => {
-        response.json(result)
-    })
+    contact.save()
+        .then(result => {
+            response.json(result)
+        })
+        .catch(error => next(error))
+
 })
 
 app.put('/api/contacts/:id', (request, response, next) => {
