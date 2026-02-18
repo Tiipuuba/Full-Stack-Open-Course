@@ -12,7 +12,7 @@ morgan(function (tokens, req, res) {
         tokens.status(req, res),
         tokens.res(req, res, 'content-length'), '-',
         tokens['response-time'](req, res), 'ms'
-    ].join(' ')  
+    ].join(' ')
 })
 
 morgan.token('data', function getData(req) {
@@ -20,7 +20,7 @@ morgan.token('data', function getData(req) {
 })
 
 const errorHandler = (error, request, response, next) => {
-  console.error(error.message)
+    console.error(error.message)
 
     if (error.name === 'CastError') {
         return response.status(400).send({ error: 'malformatted id' })
@@ -28,7 +28,7 @@ const errorHandler = (error, request, response, next) => {
         return response.status(400).json({ error: error.message })
     }
 
-  next(error)
+    next(error)
 }
 
 app.use(express.static('dist'))
@@ -39,7 +39,6 @@ app.get('/info', (request, response) => {
     Contact.find({}).then(contacts => {
         return response.send(`<p>Phonebook has info for ${contacts.length} people</p><p>${Date()}</p>`)
     })
-    
 })
 
 app.get('/api/contacts', (request, response) => {
@@ -62,7 +61,7 @@ app.get('/api/contacts/:id', (request, response, next) => {
 
 app.post('/api/contacts', (request, response, next) => {
     const body = request.body
-    if (!body.name || !body.number) {    
+    if (!body.name || !body.number) {
         return response.status(400).json({ error: 'missing name or number' })
     }
 
@@ -76,7 +75,6 @@ app.post('/api/contacts', (request, response, next) => {
             response.json(result)
         })
         .catch(error => next(error))
-
 })
 
 app.put('/api/contacts/:id', (request, response, next) => {
@@ -100,14 +98,14 @@ app.put('/api/contacts/:id', (request, response, next) => {
 
 app.delete('/api/contacts/:id', (request, response, next) => {
     Contact.findByIdAndDelete(request.params.id)
-        .then (result => {
+        .then (
             response.status(204).end()
-        })
+        )
         .catch(error => next(error))
 })
 
 const unknownEndpoint = (request, response) => {
-  response.status(404).send({ error: 'unknown endpoint' })
+    response.status(404).send({ error: 'unknown endpoint' })
 }
 
 app.use(unknownEndpoint)
