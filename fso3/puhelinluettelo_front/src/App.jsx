@@ -3,9 +3,7 @@ import { useEffect } from 'react'
 import contactService from './services/contacts.js'
 import Notification from './services/notification.jsx'
 
-const Filter = ({ value, onChange }) => {
-    return <div>filter shown with <input value={value} onChange={onChange} /></div>
-}
+const Filter = ({ value, onChange }) => { <div>filter shown with <input value={value} onChange={onChange} /></div> }
 
 const PersonForm = ({ onSubmit, nameValue, numberValue, onChangeName, onChangeNumber }) => {
     return (
@@ -68,7 +66,8 @@ const App = () => {
         if ( findPerson !== undefined) {
             const confirmChange = confirm(`${findPerson.name} is already added to phonebook, replace the old number with a new one?`)
 
-            if (confirmChange === true) {
+            if (!confirmChange) { return }
+
             const updatedContactInfo = {
                 id: findPerson.id,
                 name: findPerson.name,
@@ -84,7 +83,6 @@ const App = () => {
             doNotification(`Replaced ${findPerson.name}'s number`)
             getContacts()
             return
-            } else { return }
         }
 
         const nameObject = {
@@ -92,14 +90,18 @@ const App = () => {
             number: newNumber
         }
 
-        setNotificationType('success')
-        doNotification(`Added ${newName}`)
         contactService
             .create(nameObject)
             .then(response => {
                 setPersons(persons.concat(response))
                 setNewName('')
                 setNewNumber('')
+                setNotificationType('success')
+                doNotification(`Added ${newName}`)
+            })
+            .catch(error => {
+                setNotificationType('error')
+                doNotification(`${error.response.data.error}`)
             })
         getContacts()
     }
