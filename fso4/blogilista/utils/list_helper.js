@@ -1,3 +1,4 @@
+var _ = require('lodash')
 const blog = require("../models/blog")
 
 const dummy = (blogs) => {
@@ -31,12 +32,49 @@ const favoriteBlog = (blogs) => {
 }
 
 const mostBlogs = (blogs) => {
+
+    let authorList = []
+
+    blogs.forEach((blog) => {
+        authorList.push(blog.author)
+    })
+
     
+    let byAmount = _.countBy(authorList, String)
+
+    let lastKey = _.findLastKey(byAmount)
+    let lastValue = byAmount[lastKey]
+    
+    return {author: lastKey, blogs: lastValue}
 }
+
+const mostLikes = (blogs) => {
+    let authorsByLikes = _.reduce(blogs, (result, blog) => {
+            result[blog.author] = (result[blog.author] || 0) + blog.likes
+            return result
+        }, {})
+
+    let authorLikePairs = _.toPairs(authorsByLikes)
+
+    let mostLiked = undefined
+
+    authorLikePairs.forEach((pair) => {
+        if (mostLiked === undefined) {
+            mostLiked = {author: pair[0], likes: pair[1]}
+        } else if (pair[1] > mostLiked.likes) {
+            mostLiked = {author: pair[0], likes: pair[1]}
+        }
+        
+    })
+    
+    return mostLiked
+}
+
 
 module.exports = {
     dummy,
     totalLikes,
     favoriteBlog,
-    mostBlogs
+    mostBlogs,
+    mostLikes
 }
